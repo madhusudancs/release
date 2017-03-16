@@ -22,7 +22,7 @@ PROG=${0##*/}
 #+     $PROG - Push Kubernetes Release Artifacts up to GCS
 #+
 #+ SYNOPSIS
-#+     $PROG  [--nomock] [--federation] [--noupdatelatest] [--ci]
+#+     $PROG  [--nomock] [--noupdatelatest] [--ci]
 #+            [--bucket=<GS bucket>]
 #+     $PROG  [--helpshort|--usage|-?]
 #+     $PROG  [--help|-man]
@@ -35,13 +35,8 @@ PROG=${0##*/}
 #+     In --ci mode, $PROG runs in mock mode by default.  Use --nomock to do
 #+     a real push.
 #+
-#+     Federation values are just passed through as exported global vars still
-#+     due to the fact that we're still leveraging the existing federation
-#+     interface in kubernetes proper.
-#+
 #+ OPTIONS
 #+     [--nomock]                - Enables a real push (--ci only)
-#+     [--federation]            - Enable FEDERATION push
 #+     [--ci]                    - Used when called from Jekins (for ci runs)
 #+     [--bucket=]               - Specify an alternate bucket for pushes
 #+     [--gcs-suffix=]           - Specify a suffix to append to the upload
@@ -52,8 +47,8 @@ PROG=${0##*/}
 #+
 #+ EXAMPLES
 #+     $PROG                     - Do a developer push
-#+     $PROG --nomock --federation --ci
-#+                               - Do a (non-mocked) CI push with federation
+#+     $PROG --nomock --ci
+#+                               - Do a (non-mocked) CI push
 #+     $PROG --bucket=kubernetes-release-$USER
 #+                               - Do a developer push to
 #+                                 kubernetes-release-$USER
@@ -66,9 +61,6 @@ PROG=${0##*/}
 #+     kubernetes/hack/jenkins/build.sh
 #+                               - caller
 #+
-#+ BUGS/TODO
-#+     * Should federation be pulled into release repo?  It would offer more
-#+       control.
 #+
 ########################################################################
 # If NO ARGUMENTS should return *usage*, uncomment the following line:
@@ -171,17 +163,6 @@ if ! ((FLAGS_noupdatelatest)); then
     ((attempt++))
   done
   ((attempt>=max_attempts)) && common::exit 1 "Exiting..."
-fi
-
-# Leave push-federation-images.sh for now.  Not sure if this makes sense to
-# pull into the release repo.
-if ((FLAGS_federation)); then
-  ############################################################################
-  common::stepheader PUSH FEDERATION
-  ############################################################################
-  logecho -n "Push federation images: "
-  # FEDERATION_PUSH_REPO_BASE should be set by the calling job (yaml)
-  logrun -s ${KUBE_ROOT}/federation/develop/push-federation-images.sh
 fi
 
 # END script
